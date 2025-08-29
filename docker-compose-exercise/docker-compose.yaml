@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # TODO 1: Define the MySQL database service
+  # - Use mysql:8.0 image
+  # - Set container name to 'todo-mysql-db'
+  # - Configure environment variables:
+  #   MYSQL_ROOT_PASSWORD: rootpass
+  #   MYSQL_DATABASE: tododb
+  #   MYSQL_USER: todouser
+  #   MYSQL_PASSWORD: todopass
+  # - Map port 3306 to host port 3306
+  # - Create a volume for data persistence (mysql_data:/var/lib/mysql)
+  #   and (./database/init.sql:/docker-entrypoint-initdb.d/init.sql) for initial setup
+  # - Add the database to a network called 'backend-network'
+  # - Add a healthcheck using: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  
+  # database:
+  #   image: ???
+  #   container_name: ???
+  #   environment:
+  #     ???
+  #   ports:
+  #     - ???
+  #   volumes:
+  #     - ???
+  #     - ???
+  #   networks:
+  #     - ???
+  #   healthcheck:
+  #     test: ???
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # TODO 2: Define the Java backend service
+  # - Build from the backend directory (context: ./backend)
+  # - Set container name to 'todo-java-backend'
+  # - Configure environment variables:
+  #   DB_HOST: database
+  #   DB_PORT: 3306
+  #   DB_NAME: tododb
+  #   DB_USER: todouser
+  #   DB_PASSWORD: todopass
+  # - Map port 8080 to host port 8080
+  # - Make it depend on the database service (with health check)
+  # - Add to both 'backend-network' and 'frontend-network'
+  
+  # backend:
+  #   build:
+  #     context: ???
+  #     dockerfile: ???
+  #   container_name: ???
+  #   environment:
+  #     ???
+  #   ports:
+  #     - ???
+  #   depends_on:
+  #     ???:
+  #       condition: ???
+  #   networks:
+  #     - ???
+  #     - ???
+
+  # TODO 3: Define the frontend service
+  # - Use nginx:alpine image
+  # - Set container name to 'todo-frontend'
+  # - Map port 80 to host port 3000
+  # - Mount ./frontend directory to /usr/share/nginx/html:ro
+  # - Depends on backend service
+  # - Add to 'frontend-network' only
+
+  # frontend:
+  #   image: ???
+  #   container_name: ???
+  #   ports:
+  #     - ???
+  #   volumes:
+  #     - ???
+  #   depends_on:
+  #     - ???
+  #   networks:
+  #     - ???
+
+  # phpMyAdmin for Database Management
+   phpmyadmin:
+     image: phpmyadmin:5.2
+     container_name: todo-phpmyadmin
+     environment:
+       PMA_HOST: database
+       PMA_USER: todouser
+       PMA_PASSWORD: todopass
+     ports:
+       - "8081:80"
+     depends_on:
+       - database
+     networks:
+       - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
+  frontend-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
