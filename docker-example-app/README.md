@@ -301,3 +301,264 @@ docker-compose up -d
 - [PostgreSQL Docker Hub](https://hub.docker.com/_/postgres)
 - [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)
 - [React Documentation](https://reactjs.org/)
+
+## Docker Compose YAML Deep Dive
+
+This section explains every key aspect of our `docker-compose.yaml` file for educational purposes.
+
+### File Structure Overview
+
+```yaml
+version: '3.8'         # Compose file format version
+services:              # Define all containers
+networks:              # Define custom networks
+volumes:               # Define persistent storage
+```
+
+### Service Definitions
+
+#### 1. **Database Service**
+
+```yaml
+database:
+  image: postgres:15-alpine                    # Lightweight PostgreSQL image
+  container_name: todo-db                      # Custom container name
+  environment:                                 # Environment variables
+    POSTGRES_USER: ${DB_USER:-todouser}       # Uses .env or default value
+    POSTGRES_PASSWORD: ${DB_PASSWORD:-todopass}
+    POSTGRES_DB: ${DB_NAME:-tododb}
+  ports:
+    - "5432:5432"                              # Host:Container port mapping
+  volumes:
+    - postgres_data:/var/lib/postgresql/data  # Named volume for data persistence
+    - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql  # Init script
+  networks:
+    - backend-db-network                      # Isolated network for backend
+    - db-admin-network                        # Isolated network for adminer
+  healthcheck:                                 # Container health monitoring
+    test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-todouser}"]
+    interval: 10s                              # Check every 10 seconds
+    timeout: 5s                                # Timeout after 5 seconds
+    retries: 5                                 # Mark unhealthy after 5 failures
+```
+
+**Key Learning Points:**
+- **Alpine images**: Smaller, more secure Linux distribution
+- **Named volumes**: Data persists even when container is removed
+- **Init scripts**: Automatically run SQL files on first startup
+- **Health checks**: Ensure service is ready, not just running
+- **Network isolation**: Database on multiple networks for different consumers
+
+#### 2. **Backend Service**
+
+```yaml
+backend:
+  build:                                       # Build from Dockerfile
+    context: ./backend                        # Build context directory
+    dockerfile: Dockerfile                     # Dockerfile name
+  container_name: todo-backend
+  environment:
+    NODE_ENV: ${NODE_ENV:-development}
+    PORT: 3000
+    DB_HOST: database                         # Service name as hostname
+    DB_PORT: 5432
+    DB_USER: ${DB_USER:-todouser}
+    DB_PASSWORD: ${DB_PASSWORD:-todopass}
+    DB_NAME: ${DB_NAME:-tododb}
+  ports:
+    - "3000:3000"
+  depends_on:                                  # Service dependencies
+    database:
+      condition: service_healthy              # Wait for health check
+  networks:
+    - frontend-backend-network                # Share network with frontend
+    - backend-db-network                      # Share network with database
+  volumes:
+    - ./backend:/usr/src/app                  # Bind mount for hot-reload
+    - /usr/src/app/node_modules              # Anonymous volume for node_modules
+  command: npm start                          # Override CMD from Dockerfile
+```
+
+**Key Learning Points:**
+- **Build context**: Local build instead of pulling image
+- **Service discovery**: Use service names as hostnames
+- **depends_on with condition**: Advanced dependency management
+- **Multiple networks**: Backend as bridge between frontend and database
+- **Volume tricks**: Prevent host node_modules from overriding container's
+
+#### 3. **Frontend Service**
+
+```yaml
+frontend:
+  build:
+    context: ./frontend
+    dockerfile: Dockerfile
+  container_name: todo-frontend
+  environment:
+    REACT_APP_API_URL: http://localhost:3000  # React env variable
+  ports:
+    - "3001:3000"                             # Different host port
+  depends_on:
+    - backend                                  # Simple dependency
+  networks:
+    - frontend-backend-network                # Only backend network access
+  volumes:
+    - ./frontend:/app
+    - /app/node_modules
+```
+
+**Key Learning Points:**
+- **Port mapping**: Container port 3000 mapped to host port 3001
+- **Network isolation**: Frontend can't directly access database
+- **React env vars**: Must start with REACT_APP_
+- **Simple dependency**: No health check condition
+
+#### 4. **Adminer Service**
+
+```yaml
+adminer:
+  image: adminer:4.8.1                        # Specific version tag
+  container_name: todo-adminer
+  ports:
+    - "8080:8080"
+  depends_on:
+    - database
+  networks:
+    - db-admin-network                        # Isolated admin network
+  environment:
+    ADMINER_DEFAULT_SERVER: database
+    ADMINER_DEFAULT_DB: tododb
+    ADMINER_DESIGN: pepa-linha               # UI theme
+```
+
+**Key Learning Points:**
+- **Version pinning**: Using specific version for stability
+- **Network isolation**: Admin tool separated from application
+- **Pre-configuration**: Default values for easier access
+
+### Network Configuration
+
+```yaml
+networks:
+  frontend-backend-network:
+    driver: bridge                            # Default driver
+    name: frontend-backend-net                # Custom network name
+  backend-db-network:
+    driver: bridge
+    name: backend-database-net
+  db-admin-network:
+    driver: bridge
+    name: database-admin-net
+```
+
+**Network Segmentation Strategy:**
+- **frontend-backend-network**: Frontend ↔ Backend communication
+- **backend-db-network**: Backend ↔ Database communication  
+- **db-admin-network**: Adminer ↔ Database communication
+
+**Security Benefits:**
+- Frontend cannot directly query database
+- Adminer cannot access application services
+- Principle of least privilege enforced
+
+### Volume Configuration
+
+```yaml
+volumes:
+  postgres_data:                              # Named volume declaration
+```
+
+**Volume Types Used:**
+1. **Named Volume** (`postgres_data`): Managed by Docker, persists data
+2. **Bind Mounts** (`./backend:/usr/src/app`): Links host directory for development
+3. **Anonymous Volume** (`/usr/src/app/node_modules`): Prevents conflicts
+
+### Environment Variable Patterns
+
+```yaml
+${DB_USER:-todouser}                         # Syntax explanation
+```
+- `${DB_USER}`: Use value from .env file
+- `:-todouser`: Default value if not set
+- Allows configuration without modifying docker-compose.yaml
+
+### Docker Compose Commands Explained
+
+```bash
+# Start all services in detached mode
+docker-compose up -d
+
+# View real-time logs from all services
+docker-compose logs -f
+
+# Rebuild images before starting
+docker-compose up --build
+
+# Stop and remove containers, networks (keeps volumes)
+docker-compose down
+
+# Stop and remove everything including volumes
+docker-compose down -v
+
+# View service status
+docker-compose ps
+
+# Execute command in running container
+docker-compose exec backend sh
+
+# Restart specific service
+docker-compose restart backend
+
+# View specific service logs
+docker-compose logs -f database
+```
+
+### Best Practices Demonstrated
+
+1. **Service Naming**: Clear, descriptive names
+2. **Network Segmentation**: Security through isolation
+3. **Health Checks**: Ensure service readiness
+4. **Environment Variables**: Configuration flexibility
+5. **Volume Strategy**: Persistence and development needs
+6. **Dependency Management**: Proper startup order
+7. **Port Management**: Avoid conflicts with different host ports
+8. **Version Pinning**: Reproducible builds
+9. **Build Context**: Efficient layer caching
+10. **Comments**: Document complex configurations
+
+### Common Modifications for Learning
+
+1. **Add Resource Limits:**
+```yaml
+services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+```
+
+2. **Add Restart Policies:**
+```yaml
+services:
+  backend:
+    restart: unless-stopped
+```
+
+3. **Add Logging Configuration:**
+```yaml
+services:
+  backend:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+4. **Scale Services:**
+```bash
+docker-compose up -d --scale backend=3
+```
+(Note: Requires removing container_name and adjusting port mapping)

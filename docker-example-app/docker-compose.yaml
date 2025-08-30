@@ -15,7 +15,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - todo-network
+      - backend-db-network
+      - db-admin-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-todouser}"]
       interval: 10s
@@ -42,7 +43,8 @@ services:
       database:
         condition: service_healthy
     networks:
-      - todo-network
+      - frontend-backend-network
+      - backend-db-network
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
@@ -61,7 +63,7 @@ services:
     depends_on:
       - backend
     networks:
-      - todo-network
+      - frontend-backend-network
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -75,15 +77,22 @@ services:
     depends_on:
       - database
     networks:
-      - todo-network
+      - db-admin-network
     environment:
       ADMINER_DEFAULT_SERVER: database
       ADMINER_DEFAULT_DB: tododb
       ADMINER_DESIGN: pepa-linha
 
 networks:
-  todo-network:
+  frontend-backend-network:
     driver: bridge
+    name: frontend-backend-net
+  backend-db-network:
+    driver: bridge
+    name: backend-database-net
+  db-admin-network:
+    driver: bridge
+    name: database-admin-net
 
 volumes:
   postgres_data:
