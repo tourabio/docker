@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Branch Diagram - Docker Tutorial Project</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .branch-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .branch-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+        
+        .branch-card.main { border-left-color: #28a745; }
+        .branch-card.docker-compose { border-left-color: #007bff; }
+        .branch-card.docker-compose-exercice { border-left-color: #6f42c1; }
+        .branch-card.docker-exercice { border-left-color: #fd7e14; }
+        
+        .branch-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .commit-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .commit {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border-left: 3px solid #ddd;
+        }
+        
+        .commit-hash {
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Git Branches Overview</h1>
+        <p class="subtitle">Docker Tutorial Project Branch Structure</p>
+        
+        <div class="branch-info">
+            <div class="branch-card main">
+                <div class="branch-name">🌳 main</div>
+                <ul class="commit-list">
+                    <li class="commit">
+                        <span class="commit-hash">8a6dfef</span> - Create docker app and course
+                    </li>
+                </ul>
+                <p><strong>Purpose:</strong> Base application with initial Docker setup</p>
+            </div>
+            
+            <div class="branch-card docker-compose">
+                <div class="branch-name">🐳 docker-compose</div>
+                <ul class="commit-list">
+                    <li class="commit">
+                        <span class="commit-hash">d9a29d7</span> - Add docker-compose
+                    </li>
+                    <li class="commit">
+                        <span class="commit-hash">5fa16c1</span> - Add network isolation
+                    </li>
+                </ul>
+                <p><strong>Purpose:</strong> Enhanced with PostgreSQL, React frontend, and multi-service orchestration</p>
+            </div>
+            
+            <div class="branch-card docker-compose-exercice">
+                <div class="branch-name">📚 docker-compose-exercice</div>
+                <ul class="commit-list">
+                    <li class="commit">
+                        <span class="commit-hash">08ef813</span> - Add docker-compose-exercise (HEAD)
+                    </li>
+                </ul>
+                <p><strong>Purpose:</strong> Student exercise with Java backend, MySQL database, and TODOs to complete</p>
+            </div>
+            
+            <div class="branch-card docker-exercice">
+                <div class="branch-name">☕ docker-exercice</div>
+                <ul class="commit-list">
+                    <li class="commit">
+                        <span class="commit-hash">49870b4</span> - Add docker-exercise
+                    </li>
+                </ul>
+                <p><strong>Purpose:</strong> Basic Java containerization exercise with Dockerfile TODOs</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 8px;">
+            <h3>🔄 Branch Evolution</h3>
+            <ol>
+                <li><strong>main</strong>: Started with basic Node.js todo app and simple Docker setup</li>
+                <li><strong>docker-compose</strong>: Enhanced with full-stack architecture (PostgreSQL + React + Node.js)</li>
+                <li><strong>docker-compose-exercice</strong>: Created student exercise version with Java + MySQL + HTML</li>
+                <li><strong>docker-exercice</strong>: Parallel development of basic Java containerization tutorial</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
