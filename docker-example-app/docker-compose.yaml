@@ -39,6 +39,7 @@ services:
       DB_NAME: ${DB_NAME:-tododb}
     ports:
       - "3000:3000"
+    #ddepnds_on--> mayet7al kn ma database tekml
     depends_on:
       database:
         condition: service_healthy

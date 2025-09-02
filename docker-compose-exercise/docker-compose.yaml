@@ -15,23 +15,27 @@ services:
   # - Add the database to a network called 'backend-network'
   # - Add a healthcheck using: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
   
-  # database:
-  #   image: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #     - ???
-  #   networks:
-  #     - ???
-  #   healthcheck:
-  #     test: ???
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  database:
+    image: mysql:8.0
+    container_name: todo-mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: tododb
+      MYSQL_USER: todouser
+      MYSQL_PASSWORD: todopass
+
+    ports:
+      - "3306:3306"
+    volumes:
+       - db-data:/var/lib/mysql
+       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+       - backend-network
+    healthcheck:
+       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "todouser", "-ptodopass"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
 
   # TODO 2: Define the Java backend service
   # - Build from the backend directory (context: ./backend)
@@ -46,21 +50,23 @@ services:
   # - Make it depend on the database service (with health check)
   # - Add to both 'backend-network' and 'frontend-network'
   
-  # backend:
-  #   build:
-  #     context: ???
-  #     dockerfile: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   depends_on:
-  #     ???:
-  #       condition: ???
-  #   networks:
-  #     - ???
-  #     - ???
+  backend:
+     build:
+       context: ./backend
+       dockerfile: Dockerfile
+     container_name: todo-java-backend
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/tododb?useSSL=false&allowPublicKeyRetrieval=true
+       SPRING_DATASOURCE_USERNAME: dbmm
+       SPRING_DATASOURCE_PASSWORD: db123
+     ports:
+       - "8080:8080"
+     depends_on:
+       database:
+         condition: service_healthy
+     networks:
+       - backend-network
+       - frontend-network
 
   # TODO 3: Define the frontend service
   # - Use nginx:alpine image
@@ -70,20 +76,20 @@ services:
   # - Depends on backend service
   # - Add to 'frontend-network' only
 
-  # frontend:
-  #   image: ???
-  #   container_name: ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #   depends_on:
-  #     - ???
-  #   networks:
-  #     - ???
+  frontend:
+     image: nginx:alpine
+     container_name: todo-frontend
+     ports:
+       - "3000:80"
+     volumes:
+       - ./frontend
+     depends_on:
+       - backend
+     networks:
+       - frontend-network
 
   # phpMyAdmin for Database Management
-   phpmyadmin:
+  phpmyadmin:
      image: phpmyadmin:5.2
      container_name: todo-phpmyadmin
      environment:
