@@ -18,7 +18,7 @@ FROM openjdk:11-jre-slim
 WORKDIR /app
 
 # Copy only the built JAR from previous stage
-COPY --from=builder /app/target/todo-app-1.0.0.jar .
+COPY --from=builder /app/target/todo-app-1.0.0-jar-with-dependencies.jar .
 
 # Create non-root user
 RUN useradd -r javauser && \
@@ -35,4 +35,4 @@ HEALTHCHECK --interval=30s --timeout=3s \
   CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the application
-CMD ["java", "-jar", "todo-app-1.0.0.jar"]
+CMD ["java", "-jar", "todo-app-1.0.0-jar-with-dependencies.jar"]
