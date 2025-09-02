@@ -1,42 +1,38 @@
-# Docker Exercise: Complete the Dockerfile for the Java Todo Application
-# 
-# Instructions for students:
-# 1. Choose an appropriate base image for a Java application
-# 2. Set the working directory
-# 3. Copy the necessary files
-# 4. Build the application
-# 5. Expose the correct port
-# 6. Define the command to run the application
+# Multi-stage build for optimal image size
+FROM maven:3.8-openjdk-11 AS builder
 
-# TODO 1: Use an appropriate Java base image (hint: Todo Application is using java 11)
-# FROM ???
+# Set working directory
+WORKDIR /app
 
-# TODO 2: Set the working directory inside the container (e.g., /app)
-# WORKDIR ???
-
-# Copy Maven files for dependency caching
-# (This is done before copying source code for better Docker layer caching)
+# Copy Maven files first for better layer caching
 COPY pom.xml .
-
-# Copy the source code
 COPY src ./src
 
-# TODO 3: Install Maven and build the application
-# Hint: You might need to:
-# - Install Maven if not in base image
-# - Run: mvn clean package
-# - Or use a multi-stage build approach
-# RUN ???
+# Build the application
+RUN mvn clean package
 
-# TODO 4: Expose the port that the application runs on (check TodoApplication.java for the port number)
-# EXPOSE ???
+# Final stage with minimal runtime
+FROM openjdk:11-jre-slim
 
-# TODO 5: Define the command to run the Java application
-# Hint: java -jar target/todo-app-1.0.0.jar
-# Or if dependencies are separate: java -cp "target/*:target/lib/*" com.example.todoapp.TodoApplication
-# CMD ???
+# Set working directory
+WORKDIR /app
 
-# BONUS TODO: 
-# - Add a health check
-# - Use multi-stage build to reduce image size
-# - Add a non-root user for better security
+# Copy only the built JAR from previous stage
+COPY --from=builder /app/target/todo-app-1.0.0.jar .
+
+# Create non-root user
+RUN useradd -r javauser && \
+    chown javauser /app
+
+# Switch to non-root user
+USER javauser
+
+# Expose application port
+EXPOSE 8080
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Run the application
+CMD ["java", "-jar", "todo-app-1.0.0.jar"]
