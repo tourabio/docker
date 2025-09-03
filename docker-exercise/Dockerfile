@@ -1,42 +1,29 @@
-# Docker Exercise: Complete the Dockerfile for the Java Todo Application
-# 
-# Instructions for students:
-# 1. Choose an appropriate base image for a Java application
-# 2. Set the working directory
-# 3. Copy the necessary files
-# 4. Build the application
-# 5. Expose the correct port
-# 6. Define the command to run the application
+# syntax=docker/dockerfile:1
 
-# TODO 1: Use an appropriate Java base image (hint: Todo Application is using java 11)
-# FROM ???
+### Build stage (Java 11 + Maven)
+FROM maven:3.9.6-eclipse-temurin-11 AS build
+WORKDIR /build
 
-# TODO 2: Set the working directory inside the container (e.g., /app)
-# WORKDIR ???
-
-# Copy Maven files for dependency caching
-# (This is done before copying source code for better Docker layer caching)
 COPY pom.xml .
+RUN mvn -q -DskipTests dependency:go-offline
 
-# Copy the source code
 COPY src ./src
+# build + copie des dépendances dans target/libs
+RUN mvn -q -DskipTests clean package dependency:copy-dependencies -DoutputDirectory=target/libs
 
-# TODO 3: Install Maven and build the application
-# Hint: You might need to:
-# - Install Maven if not in base image
-# - Run: mvn clean package
-# - Or use a multi-stage build approach
-# RUN ???
+### Runtime stage (JRE 11)
+FROM eclipse-temurin:11-jre
+# sécurité: non-root
+RUN useradd -u 10001 -m appuser
+USER appuser
 
-# TODO 4: Expose the port that the application runs on (check TodoApplication.java for the port number)
-# EXPOSE ???
+WORKDIR /app
+# jar appli + libs
+COPY --from=build /build/target/*.jar /app/
+COPY --from=build /build/target/libs /app/libs
 
-# TODO 5: Define the command to run the Java application
-# Hint: java -jar target/todo-app-1.0.0.jar
-# Or if dependencies are separate: java -cp "target/*:target/lib/*" com.example.todoapp.TodoApplication
-# CMD ???
+EXPOSE 8080
+ENV JAVA_OPTS=""
 
-# BONUS TODO: 
-# - Add a health check
-# - Use multi-stage build to reduce image size
-# - Add a non-root user for better security
+# lance avec le classpath (jar + libs)
+ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -cp \"$(ls /app/*.jar):/app/libs/*\" com.example.todoapp.TodoApplication"]
