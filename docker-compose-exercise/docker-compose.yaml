@@ -15,25 +15,7 @@ services:
   # - Add the database to a network called 'backend-network'
   # - Add a healthcheck using: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
   
-  # database:
-  #   image: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #     - ???
-  #   networks:
-  #     - ???
-  #   healthcheck:
-  #     test: ???
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
 
-  # MySQL database service
   database:
     image: mysql:8.0
     container_name: todo-mysql-db
@@ -69,25 +51,7 @@ services:
   # - Map port 8080 to host port 8080
   # - Make it depend on the database service (with health check)
   # - Add to both 'backend-network' and 'frontend-network'
-  
-  # backend:
-  #   build:
-  #     context: ???
-  #     dockerfile: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   depends_on:
-  #     ???:
-  #       condition: ???
-  #   networks:
-  #     - ???
-  #     - ???
 
-
-    # Java backend service
   backend:
       build:
         context: ./backend
@@ -116,17 +80,7 @@ services:
   # - Depends on backend service
   # - Add to 'frontend-network' only
 
-  # frontend:
-  #   image: ???
-  #   container_name: ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #   depends_on:
-  #     - ???
-  #   networks:
-  #     - ???
+
   frontend:
     image: nginx:alpine
     container_name: todo-frontend
