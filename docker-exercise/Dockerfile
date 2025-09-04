@@ -29,7 +29,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 FROM openjdk:11-jre-slim
-v
+
 RUN groupadd -r todoapp && useradd -r -g todoapp todoapp
 
 WORKDIR /app
