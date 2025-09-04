@@ -83,7 +83,64 @@ services:
   #     - ???
 
   # phpMyAdmin for Database Management
-   phpmyadmin:
+
+  # ✅ MySQL Database Service
+  database:
+    image: mysql:8.0
+    container_name: todo-mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: tododb
+      MYSQL_USER: todouser
+      MYSQL_PASSWORD: todopass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ✅ Java Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: todo-java-backend
+    environment:
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_NAME: tododb
+      DB_USER: todouser
+      DB_PASSWORD: todopass
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - backend-network
+      - frontend-network
+
+  # ✅ Frontend Service
+  frontend:
+    image: nginx:alpine
+    container_name: todo-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - frontend-network
+
+  phpmyadmin:
      image: phpmyadmin:5.2
      container_name: todo-phpmyadmin
      environment:
