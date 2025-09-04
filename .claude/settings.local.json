@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(/C:\\Users\\Mohamed SayedT\\Documents\\tutos\\ENSIT\\docker\\docker-exercise/**)"
+      "Read(/C:\\Users\\Mohamed SayedT\\Documents\\tutos\\ENSIT\\docker\\docker-exercise/**)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
