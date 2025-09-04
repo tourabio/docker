@@ -4,41 +4,47 @@
 
 ### Total: 20 points
 
+**Note: Partial credit is available for each TODO. Students can receive partial points for attempting tasks even if not fully correct.**
+
 #### Main Tasks (14 points)
 
 ##### TODO 1: Base Image Selection (3 points)
-- **Correct Java 11 image (2 pts)**
-  - Uses openjdk:11 or equivalent
-  - Slim/Alpine variant preferred (openjdk:11-jre-slim)
-- **Justification (1 pt)**
-  - Appropriate for Java 11 application
-  - Size consideration
+- **Correct Java 11 image (3 pts)**
+  - Uses openjdk:11 or equivalent (2 pts)
+  - Slim/Alpine variant preferred for optimization (1 pt)
+  - Partial credit: 1 pt for any Java image, 2 pts for Java 11
 
 ##### TODO 2: Working Directory (2 points)
 - **WORKDIR set correctly (2 pts)**
   - Uses /app or similar logical path
   - Consistent throughout Dockerfile
+  - Partial credit: 1 pt for setting WORKDIR even if path is suboptimal
 
 ##### TODO 3: Maven Build (4 points)
 - **Build approach (2 pts)**
   - Maven installed or using maven image
   - Correct mvn clean package command
+  - Partial credit: 1 pt for attempting build even with errors
 - **Build optimization (2 pts)**
   - Dependencies cached properly (pom.xml copied first)
   - Multi-stage build approach gets full points
+  - Partial credit: 1 pt for basic build without optimization
 
 ##### TODO 4: Port Exposure (2 points)
 - **Correct port exposed (2 pts)**
   - Must check TodoApplication.java for actual port
   - Uses EXPOSE directive correctly
+  - Partial credit: 1 pt for using EXPOSE with wrong port
 
 ##### TODO 5: Run Command (3 points)
 - **CMD/ENTRYPOINT correct (2 pts)**
   - Proper Java execution command
   - Correct JAR file path (target/todo-app-1.0.0.jar)
+  - Partial credit: 1 pt for attempting java command with errors
 - **Command format (1 pt)**
   - Uses exec form ["java", "-jar", ...]
   - Or shell form with proper syntax
+  - Partial credit: 0.5 pt for working command with suboptimal format
 
 #### Bonus Tasks (6 points)
 
@@ -144,10 +150,7 @@ Common Issues to Check:
    - Exposing unnecessary ports
    - Including build tools in final image
 
-4. **Missing .dockerignore** (-0.5 pt)
-   - Not excluding .git, target/, etc.
-
-5. **Incorrect CMD format** (-1 pt)
+4. **Incorrect CMD format** (-1 pt)
    - Wrong JAR path
    - Missing java command flags
 
