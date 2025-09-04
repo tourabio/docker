@@ -25,7 +25,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 
 # TODO 3: Install Maven and build the application
-# Maven is already available in the build stage, so we just need to build
+# Your pom.xml uses dependency plugin to copy deps to lib/, so use package goal
 RUN mvn clean package -DskipTests
 
 # TODO 1: Use an appropriate Java base image for runtime (Java 11)
@@ -37,8 +37,9 @@ RUN groupadd -r todoapp && useradd -r -g todoapp todoapp
 # TODO 2: Set the working directory inside the container
 WORKDIR /app
 
-# Copy the built JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the JAR and the lib directory with dependencies
+COPY --from=build /app/target/todo-app-1.0.0.jar app.jar
+COPY --from=build /app/target/lib ./lib
 
 # Change ownership to non-root user
 RUN chown -R todoapp:todoapp /app
