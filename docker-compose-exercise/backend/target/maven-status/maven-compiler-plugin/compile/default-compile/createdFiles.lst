@@ -1,0 +1,9 @@
+com\example\todoapp\TodoApplication$HealthHandler.class
+com\example\todoapp\TodoApplication.class
+com\example\todoapp\TodoApplication$ApiInfo.class
+com\example\todoapp\TodoApplication$HealthStatus.class
+com\example\todoapp\TodoApplication$DeleteResponse.class
+com\example\todoapp\TodoApplication$Todo.class
+com\example\todoapp\TodoApplication$TodosHandler.class
+com\example\todoapp\TodoApplication$CreateTodoRequest.class
+com\example\todoapp\TodoApplication$RootHandler.class

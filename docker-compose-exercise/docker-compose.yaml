@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # TODO 1: Define the MySQL database service
   # - Use mysql:8.0 image
@@ -15,23 +13,26 @@ services:
   # - Add the database to a network called 'backend-network'
   # - Add a healthcheck using: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
   
-  # database:
-  #   image: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #     - ???
-  #   networks:
-  #     - ???
-  #   healthcheck:
-  #     test: ???
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  database:
+    image: mysql:8.0
+    container_name: todo-mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: tododb
+      MYSQL_USER: todouser
+      MYSQL_PASSWORD: todopass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # TODO 2: Define the Java backend service
   # - Build from the backend directory (context: ./backend)
@@ -45,22 +46,26 @@ services:
   # - Map port 8080 to host port 8080
   # - Make it depend on the database service (with health check)
   # - Add to both 'backend-network' and 'frontend-network'
-  
-  # backend:
-  #   build:
-  #     context: ???
-  #     dockerfile: ???
-  #   container_name: ???
-  #   environment:
-  #     ???
-  #   ports:
-  #     - ???
-  #   depends_on:
-  #     ???:
-  #       condition: ???
-  #   networks:
-  #     - ???
-  #     - ???
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: todo-java-backend
+    environment:
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_NAME: tododb
+      DB_USER: todouser
+      DB_PASSWORD: todopass
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - backend-network
+      - frontend-network
 
   # TODO 3: Define the frontend service
   # - Use nginx:alpine image
@@ -70,32 +75,32 @@ services:
   # - Depends on backend service
   # - Add to 'frontend-network' only
 
-  # frontend:
-  #   image: ???
-  #   container_name: ???
-  #   ports:
-  #     - ???
-  #   volumes:
-  #     - ???
-  #   depends_on:
-  #     - ???
-  #   networks:
-  #     - ???
+  frontend:
+    image: nginx:alpine
+    container_name: todo-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - frontend-network
 
   # phpMyAdmin for Database Management
-   phpmyadmin:
-     image: phpmyadmin:5.2
-     container_name: todo-phpmyadmin
-     environment:
-       PMA_HOST: database
-       PMA_USER: todouser
-       PMA_PASSWORD: todopass
-     ports:
-       - "8081:80"
-     depends_on:
-       - database
-     networks:
-       - backend-network
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: todo-phpmyadmin
+    environment:
+      PMA_HOST: database
+      PMA_USER: todouser
+      PMA_PASSWORD: todopass
+    ports:
+      - "8081:80"
+    depends_on:
+      - database
+    networks:
+      - backend-network
 
 networks:
   backend-network:
