@@ -164,6 +164,51 @@ docker images todo-app  # Check image size
 docker run todo-app whoami  # Check if non-root user
 ```
 
+## evaluation-directory
+All student evaluations should be saved in `../docker-eval` directory with format: `ex<ex_number>-evaluation-<student_name>.md`
+
+## evaluation-example
+
+Based on the approved evaluation for student "amine", the template includes:
+- Student name and email in header section
+- Detailed scoring for each TODO with partial credit
+- Visual indicators (✅/⚠️/❌) for quick assessment
+- Specific feedback and recommendations
+- Overall grade classification
+
+Template format:
+```markdown
+# Docker Exercise 1 Evaluation Report
+
+**Student:** [Student Name]  
+**Email:** [student.email@gmail.com]  
+**Date:** [Date]  
+**Exercise:** Java Todo Application Dockerfile
+
+## Score Summary
+**TOTAL SCORE: X/20**
+
+## Detailed Evaluation
+
+### MAIN TASKS (X/14)
+
+#### ✅/⚠️/❌ TODO 1 - Base Image Selection (X/3 pts)
+- ✅/⚠️/❌ Uses Java 11 image: [image used] (X pts)
+- ✅/⚠️/❌ Optimal image choice (slim/jre) (X pts)
+- **Comments:** [Specific feedback]
+
+[Continue for all TODOs...]
+
+### BONUS TASKS (X/6)
+[Health Check, Multi-stage Build, Non-root User sections]
+
+## Feedback
+[Strengths, Areas for Improvement, Recommendations]
+
+## Grade: **[Letter]** ([Description])
+[Overall assessment]
+```
+
 ## student-emails
 
 inesabdellaoui111@gmail.com
