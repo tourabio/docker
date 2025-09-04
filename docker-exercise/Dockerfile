@@ -1,42 +1,42 @@
-# Docker Exercise: Complete the Dockerfile for the Java Todo Application
-# 
-# Instructions for students:
-# 1. Choose an appropriate base image for a Java application
-# 2. Set the working directory
-# 3. Copy the necessary files
-# 4. Build the application
-# 5. Expose the correct port
-# 6. Define the command to run the application
+# Use a Maven + JDK 11 base image
+FROM maven:3.9.3-eclipse-temurin-11 AS build
 
-# TODO 1: Use an appropriate Java base image (hint: Todo Application is using java 11)
-# FROM ???
+# Set working directory inside container
+WORKDIR /app
 
-# TODO 2: Set the working directory inside the container (e.g., /app)
-# WORKDIR ???
-
-# Copy Maven files for dependency caching
-# (This is done before copying source code for better Docker layer caching)
+# Copy Maven configuration first for caching dependencies
 COPY pom.xml .
+
+# Download dependencies (cached if pom.xml doesn't change)
+RUN mvn dependency:go-offline -B
 
 # Copy the source code
 COPY src ./src
 
-# TODO 3: Install Maven and build the application
-# Hint: You might need to:
-# - Install Maven if not in base image
-# - Run: mvn clean package
-# - Or use a multi-stage build approach
-# RUN ???
+# Build the application
+RUN mvn clean package -DskipTests
 
-# TODO 4: Expose the port that the application runs on (check TodoApplication.java for the port number)
-# EXPOSE ???
 
-# TODO 5: Define the command to run the Java application
-# Hint: java -jar target/todo-app-1.0.0.jar
-# Or if dependencies are separate: java -cp "target/*:target/lib/*" com.example.todoapp.TodoApplication
-# CMD ???
+# Use a minimal JDK 11 runtime image to reduce image size
+FROM eclipse-temurin:11-jre-alpine
 
-# BONUS TODO: 
-# - Add a health check
-# - Use multi-stage build to reduce image size
-# - Add a non-root user for better security
+# Create a non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built jar from the build stage
+COPY --from=build /app/target/todo-app-1.0.0.jar ./todo-app.jar
+
+# Expose the port the app runs on (assuming 8080, check your TodoApplication.java)
+EXPOSE 8080
+
+# Define the command to run the application
+CMD ["java", "-jar", "todo-app.jar"]
+
+
+# Check if port 8080 responds every 30s
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --spider http://localhost:8080/ || exit 1
