@@ -6,6 +6,9 @@
       "Read(/C:\\Users\\Mohamed SayedT\\Documents\\tutos\\ENSIT\\docker-eval/**)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\Mohamed SayedT\\Documents\\tutos\\ENSIT"
+    ]
   }
 }
