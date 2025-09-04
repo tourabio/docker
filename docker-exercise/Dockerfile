@@ -1,42 +1,42 @@
-# Docker Exercise: Complete the Dockerfile for the Java Todo Application
-# 
-# Instructions for students:
-# 1. Choose an appropriate base image for a Java application
-# 2. Set the working directory
-# 3. Copy the necessary files
-# 4. Build the application
-# 5. Expose the correct port
-# 6. Define the command to run the application
+# Stage 1: Build the application
+FROM maven:3.8.5-openjdk-11 AS builder
 
-# TODO 1: Use an appropriate Java base image (hint: Todo Application is using java 11)
-# FROM ???
-
-# TODO 2: Set the working directory inside the container (e.g., /app)
-# WORKDIR ???
+# Set working directory
+WORKDIR /app
 
 # Copy Maven files for dependency caching
-# (This is done before copying source code for better Docker layer caching)
 COPY pom.xml .
 
 # Copy the source code
 COPY src ./src
 
-# TODO 3: Install Maven and build the application
-# Hint: You might need to:
-# - Install Maven if not in base image
-# - Run: mvn clean package
-# - Or use a multi-stage build approach
-# RUN ???
+# Build the application
+RUN mvn clean package -DskipTests
 
-# TODO 4: Expose the port that the application runs on (check TodoApplication.java for the port number)
-# EXPOSE ???
+# Stage 2: Create the runtime image
+FROM openjdk:11-jre-slim
 
-# TODO 5: Define the command to run the Java application
-# Hint: java -jar target/todo-app-1.0.0.jar
-# Or if dependencies are separate: java -cp "target/*:target/lib/*" com.example.todoapp.TodoApplication
-# CMD ???
+# Set working directory
+WORKDIR /app
 
-# BONUS TODO: 
-# - Add a health check
-# - Use multi-stage build to reduce image size
-# - Add a non-root user for better security
+# Create a non-root user
+RUN useradd -m -u 1000 appuser
+
+# Copy the built JAR from the builder stage
+COPY --from=builder /app/target/todo-app-1.0.0.jar ./todo-app.jar
+
+# Change ownership of the application files
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port 8080 (common for Spring Boot applications, assuming TodoApplication.java uses this)
+EXPOSE 8080
+
+# Health check to verify the application is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Run the application
+CMD ["java", "-jar", "todo-app.jar"]
