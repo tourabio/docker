@@ -28,7 +28,8 @@ WORKDIR /app
 
 # Copy the built JAR and dependencies from builder stage
 COPY --from=builder /build/target/todo-app-1.0.0.jar app.jar
-COPY --from=builder /build/target/lib lib/
+COPY --from=builder /build/target/lib ./lib
+
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
@@ -47,7 +48,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ENV APP_ENV=production
 
 # Run the application
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-cp", "app.jar:lib/*", "com.example.todoapp.TodoApplication"]
+
 
 # Alternative CMD if you need to specify classpath:
 # CMD ["java", "-cp", "app.jar:lib/*", "com.example.todoapp.TodoApplication"]
