@@ -9,6 +9,7 @@
 # 6. Define the command to run the application
 
 # Multi-stage build for smaller final image
+
 FROM maven:3.8.6-openjdk-11 AS build
 
 # TODO 2: Set the working directory inside the container (e.g., /app)
