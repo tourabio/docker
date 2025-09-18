@@ -165,7 +165,7 @@ docker run todo-app whoami  # Check if non-root user
 ```
 
 ## evaluation-directory
-All student evaluations should be saved in `../docker-eval` directory with format: `ex<ex_number>-evaluation-<student_name>.md`
+All student evaluations should be saved in `../docker-eval` directory with format: `docker-evaluation-<student_name>.md`
 
 ## evaluation-example
 
